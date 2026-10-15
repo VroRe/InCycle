@@ -14,10 +14,10 @@
 <style>
   @font-face { font-family: 'Inter Tight'; src: url('InterTight.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: swap; }
   @font-face { font-family: 'Gaegu'; src: url('Gaegu-Regular.ttf') format('truetype'); font-weight: 400; font-style: normal; font-display: swap; }
-  :root { --mah:#442727; --smoke:#E6E7D9; --camel:#D2C6B2; --pis:#937D14; --mute:rgba(68,39,39,.62); --glass:rgba(255,255,255,.42); --edge:rgba(255,255,255,.7); }
+  :root { --mah:#442727; --smoke:#E6E7D9; --camel:#D2C6B2; --pis:#747A2B; --mute:rgba(68,39,39,.62); --glass:rgba(255,255,255,.42); --edge:rgba(255,255,255,.7); }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html { background:
-    radial-gradient(70% 38% at 95% 2%, rgba(147,125,20,.32), transparent 70%),
+    radial-gradient(70% 38% at 95% 2%, rgba(116,122,43,.32), transparent 70%),
     radial-gradient(75% 42% at 0% 58%, rgba(210,198,178,.95), transparent 70%),
     radial-gradient(70% 40% at 100% 100%, rgba(68,39,39,.28), transparent 70%),
     linear-gradient(170deg,#E6E7D9,#DCD3BD) fixed; }
@@ -60,7 +60,7 @@
   .food .pi svg { width: 34px; height: 34px; stroke-width: 1.4; }
   .food .fo { font-size: 25px; line-height: 1.1; padding-right: 44px; margin-top: 4px; }
   .tags { display: flex; flex-wrap: wrap; gap: 6px; }
-  .tag { border: 1px solid rgba(147,125,20,.5); border-radius: 16px; padding: 4px 10px; font-size: 12.5px; }
+  .tag { border: 1px solid rgba(116,122,43,.5); border-radius: 16px; padding: 4px 10px; font-size: 12.5px; }
   .tag.no { border-color: rgba(68,39,39,.3); color: var(--mute); }
   .food ul { margin: 0; padding-left: 18px; font-size: 13.5px; line-height: 1.5; }
   .food li { margin-bottom: 4px; }
@@ -77,9 +77,9 @@
   .c { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; box-sizing: border-box; }
   .t-b .c { background: var(--mah); color: var(--smoke); }
   .t-b.p .c { background: rgba(68,39,39,.1); border: 1.5px dashed var(--mah); color: var(--mah); }
-  .t-f .c { background: rgba(147,125,20,.22); }
+  .t-f .c { background: rgba(116,122,43,.22); }
   .t-o .c { background: var(--pis); color: #fff; font-weight: 600; }
-  .t-o.p .c { background: rgba(147,125,20,.3); border: 1.5px dashed var(--pis); color: var(--mah); font-weight: 600; }
+  .t-o.p .c { background: rgba(116,122,43,.3); border: 1.5px dashed var(--pis); color: var(--mah); font-weight: 600; }
   .today .c { font-weight: 700; }
   .today svg { position: absolute; left: -4px; top: -4px; width: 34px; height: 34px; pointer-events: none; overflow: visible; }
 
@@ -115,7 +115,7 @@
   .btn { border: 1px solid var(--mah); background: none; color: var(--mah); font: inherit; font-size: 15px; padding: 14px; border-radius: 30px; width: 100%; }
   .btn.pri { background: #fff; border-color: #fff; color: var(--mah); }
   select { font: inherit; font-size: 13px; color: var(--mah); background: rgba(255,255,255,.6); border: 1px solid var(--camel); border-radius: 16px; padding: 6px 10px; }
-  .warn { background: rgba(147,125,20,.18); border-radius: 16px; padding: 10px 14px; font-size: 13px; margin-bottom: 12px; display: none; }
+  .warn { background: rgba(116,122,43,.18); border-radius: 16px; padding: 10px 14px; font-size: 13px; margin-bottom: 12px; display: none; }
   .warn.on { display: block; }
   .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom) + 84px); background: var(--mah); color: var(--smoke); padding: 10px 16px; border-radius: 22px; font-size: 13px; display: none; align-items: center; gap: 14px; z-index: 5; width: max-content; max-width: 92vw; }
   .toast.on { display: flex; }
@@ -134,7 +134,7 @@
       <div class="legend">
         <span><i style="background:var(--smoke)"></i>Blutung</span>
         <span><i style="background:var(--pis)"></i>Eisprung</span>
-        <span><i style="background:rgba(147,125,20,.5)"></i>fruchtbar</span>
+        <span><i style="background:rgba(116,122,43,.5)"></i>fruchtbar</span>
         <span><i style="border:1.5px dashed var(--smoke)"></i>Prognose</span>
       </div>
     </div>
@@ -203,8 +203,8 @@ const fmt = (dn, o) => new Date(dn * DAY).toLocaleDateString('de-DE', Object.ass
 const $ = id => document.getElementById(id);
 
 /* ---------- Speicher ---------- */
-const SEED = ['2026-09-06', '2026-09-07', '2026-09-08', '2026-09-09', '2026-10-11', '2026-10-12', '2026-10-13', '2026-10-14'], SEED_V = 3;
-const OLD_SEED = ['2026-08-30', '2026-08-31', '2026-09-01', '2026-09-02'];
+const SEED = [], SEED_V = 3;
+const OLD_SEED = [];
 let state = load();
 function load() {
   try {
@@ -285,7 +285,7 @@ function monthHTML(y, m, map) {
   for (let d = 1; d <= n; d++) {
     const dn = dnOf(y, m, d), e = map.get(dn);
     let cls = 'd' + (e ? ' t-' + e.t + (e.pred ? ' p' : '') : '') + (dn === TODAY ? ' today' : '');
-    const ring = dn === TODAY ? '<svg viewBox="0 0 34 34"><path d="M17 2 C27 1 33 9 32 19 C31 28 23 33 14 32 C6 31 1 24 2 15 C3 7 10 3 20 3" fill="none" stroke="#937D14" stroke-width="1.6" stroke-linecap="round"/></svg>' : '';
+    const ring = dn === TODAY ? '<svg viewBox="0 0 34 34"><path d="M17 2 C27 1 33 9 32 19 C31 28 23 33 14 32 C6 31 1 24 2 15 C3 7 10 3 20 3" fill="none" stroke="#747A2B" stroke-width="1.6" stroke-linecap="round"/></svg>' : '';
     h += '<button class="' + cls + '" data-dn="' + dn + '"><span class="c">' + d + ring + '</span></button>';
   }
   return h + '</div></div>';
