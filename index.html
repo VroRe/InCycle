@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#442727">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Zyklus">
+<title>Zyklus</title>
+<style>
+  @font-face { font-family: 'Inter Tight'; src: url('InterTight.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: swap; }
+  @font-face { font-family: 'Gaegu'; src: url('Gaegu-Regular.ttf') format('truetype'); font-weight: 400; font-style: normal; font-display: swap; }
+  :root { --mah:#442727; --smoke:#E6E7D9; --camel:#D2C6B2; --pis:#937D14; --mute:rgba(68,39,39,.62); --glass:rgba(255,255,255,.42); --edge:rgba(255,255,255,.7); }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { background:
+    radial-gradient(70% 38% at 95% 2%, rgba(147,125,20,.32), transparent 70%),
+    radial-gradient(75% 42% at 0% 58%, rgba(210,198,178,.95), transparent 70%),
+    radial-gradient(70% 40% at 100% 100%, rgba(68,39,39,.28), transparent 70%),
+    linear-gradient(170deg,#E6E7D9,#DCD3BD) fixed; }
+  body { margin: 0; font-family: 'Inter Tight', -apple-system, system-ui, sans-serif; color: var(--mah); font-size: 14px; }
+  .hand { font-family: 'Gaegu', 'Bradley Hand', cursive; font-weight: 400; letter-spacing: .01em; }
+  svg.ic { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  #app { display: flex; flex-direction: column; height: 100dvh; max-width: 520px; margin: 0 auto; }
+  .view { display: none; flex: 1; min-height: 0; flex-direction: column; }
+  .view.on { display: flex; }
+  .glass { background: var(--glass); border: 1px solid var(--edge); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 2px 10px rgba(68,39,39,.07); }
+
+  /* Kopfbereich */
+  .top { margin: calc(env(safe-area-inset-top) + 10px) 12px 4px; background: var(--mah); color: var(--smoke); border-radius: 24px; padding: 14px 16px 12px; }
+  .next { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .next > div + div { border-left: 1px solid rgba(230,231,217,.2); padding-left: 14px; }
+  .lbl { font-size: 11px; font-weight: 400; letter-spacing: .06em; text-transform: uppercase; color: var(--mute); display: flex; align-items: center; gap: 5px; }
+  .lbl svg { width: 14px; height: 14px; stroke-width: 1.8; }
+  .top .lbl { color: rgba(230,231,217,.7); }
+  .dt { font-size: 24px; font-weight: 400; letter-spacing: -.01em; line-height: 1.1; margin-top: 4px; }
+  .in { font-size: 21px; line-height: 1; margin-top: 3px; color: var(--pis); }
+  .top .in { color: var(--camel); }
+  .phase { font-size: 12.5px; margin-top: 10px; color: rgba(230,231,217,.8); }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11px; margin-top: 6px; color: rgba(230,231,217,.7); }
+  .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 4px; vertical-align: -1px; box-sizing: border-box; }
+  .info { border: 1px solid currentColor; color: inherit; opacity: .7; background: none; width: 18px; height: 18px; border-radius: 50%; font: inherit; font-size: 11px; line-height: 1; padding: 0; vertical-align: 2px; margin-left: 6px; }
+  .k { cursor: pointer; }
+  .ov { position: fixed; inset: 0; background: rgba(68,39,39,.4); display: none; align-items: center; justify-content: center; padding: 24px; z-index: 10; }
+  .ov.on { display: flex; }
+  .paper { background: #EFE6C8; border-radius: 3px; padding: 16px 18px 14px; max-width: 320px; width: 100%; transform: rotate(-1deg); box-shadow: 0 6px 18px rgba(68,39,39,.3); }
+  .paper h3 { margin: 0 0 4px; font-size: 28px; line-height: 1; color: var(--pis); }
+  .paper p { margin: 0; font-size: 13.5px; line-height: 1.5; }
+  .paper button { margin-top: 12px; border: 0; background: none; font: inherit; font-weight: 500; font-size: 13px; color: var(--mah); padding: 0; float: right; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .chip { border: 1px solid rgba(68,39,39,.25); background: none; color: var(--mah); font: inherit; font-size: 13px; padding: 7px 13px; border-radius: 20px; }
+  .chip.on { background: var(--mah); color: var(--smoke); border-color: var(--mah); }
+  .chip.now::after { content: " •"; color: var(--pis); }
+  .chip.on.now::after { color: var(--camel); }
+  .food { border-radius: 22px; padding: 14px 16px 16px; position: relative; }
+  .food .pi { position: absolute; right: 14px; top: 12px; color: var(--pis); }
+  .food .pi svg { width: 34px; height: 34px; stroke-width: 1.4; }
+  .food .fo { font-size: 25px; line-height: 1.1; padding-right: 44px; margin-top: 4px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { border: 1px solid rgba(147,125,20,.5); border-radius: 16px; padding: 4px 10px; font-size: 12.5px; }
+  .tag.no { border-color: rgba(68,39,39,.3); color: var(--mute); }
+  .food ul { margin: 0; padding-left: 18px; font-size: 13.5px; line-height: 1.5; }
+  .food li { margin-bottom: 4px; }
+
+  /* Kalender */
+  #months { flex: 1; overflow-y: auto; position: relative; padding: 0 12px 16px; -webkit-overflow-scrolling: touch; }
+  .mo { border-radius: 22px; padding: 10px 10px 8px; margin-top: 12px; background: var(--glass); border: 1px solid var(--edge); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 2px 10px rgba(68,39,39,.07); }
+  .mh { font-size: 17px; font-weight: 500; letter-spacing: -.01em; margin: 2px 6px 6px; }
+  .wk { display: grid; grid-template-columns: repeat(7,1fr); text-align: center; font-size: 10.5px; font-weight: 500; color: var(--mute); padding-bottom: 3px; margin-bottom: 2px; border-bottom: 1px solid rgba(68,39,39,.12); }
+  .wk span:nth-child(n+6) { color: var(--pis); }
+  .g { display: grid; grid-template-columns: repeat(7,1fr); }
+  .g > :nth-child(7n), .g > :nth-child(7n+6) { background: rgba(68,39,39,.04); }
+  .d { border: 0; background: none; padding: 0; height: 32px; display: flex; align-items: center; justify-content: center; font: inherit; font-size: 12.5px; color: var(--mah); }
+  .c { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; box-sizing: border-box; }
+  .t-b .c { background: var(--mah); color: var(--smoke); }
+  .t-b.p .c { background: rgba(68,39,39,.1); border: 1.5px dashed var(--mah); color: var(--mah); }
+  .t-f .c { background: rgba(147,125,20,.22); }
+  .t-o .c { background: var(--pis); color: #fff; font-weight: 600; }
+  .t-o.p .c { background: rgba(147,125,20,.3); border: 1.5px dashed var(--pis); color: var(--mah); font-weight: 600; }
+  .today .c { font-weight: 700; }
+  .today svg { position: absolute; left: -4px; top: -4px; width: 34px; height: 34px; pointer-events: none; overflow: visible; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 2px; margin: 4px 12px calc(env(safe-area-inset-bottom) + 8px); padding: 5px; border-radius: 30px; }
+  .tabs button { flex: 1; border: 0; background: none; font: inherit; font-size: 10.5px; color: var(--mute); padding: 6px 0 5px; border-radius: 24px; position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .tabs svg.ic { width: 21px; height: 21px; }
+  .tabs button.on { background: var(--mah); color: var(--smoke); }
+  .tabs .dot { position: absolute; top: 4px; right: 22%; width: 7px; height: 7px; border-radius: 50%; background: var(--pis); display: none; }
+  .tabs .dot.on { display: block; }
+
+  /* Seiten */
+  .scroll { flex: 1; overflow-y: auto; padding: calc(env(safe-area-inset-top) + 14px) 14px 16px; }
+  h1 { font-size: 30px; font-weight: 300; letter-spacing: -.02em; margin: 0 0 12px; line-height: 1.1; }
+  h2 { font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); margin: 20px 0 8px; }
+  .hint { display: flex; align-items: center; justify-content: flex-end; gap: 4px; margin: -8px 4px 8px; font-size: 20px; color: var(--mah); }
+  .hint svg { width: 46px; height: 28px; fill: none; stroke: var(--mah); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+  .hl { background: var(--mah); color: var(--smoke); border-radius: 22px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .hl .lbl { color: rgba(230,231,217,.7); }
+  .hl .in { color: var(--camel); font-size: 24px; text-align: right; white-space: nowrap; }
+  .hl + .hl { margin-top: 8px; background: var(--pis); }
+  .hl + .hl .lbl { color: rgba(255,255,255,.85); } .hl + .hl .in { color: #fff; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .k { background: var(--glass); border: 1px solid var(--edge); border-radius: 16px; padding: 10px 11px; }
+  .k b { display: block; font-size: 20px; font-weight: 400; letter-spacing: -.01em; }
+  .k span { font-size: 10.5px; color: var(--mute); line-height: 1.25; display: block; margin-top: 2px; }
+  .bars { display: flex; flex-direction: column; gap: 6px; }
+  .br { display: grid; grid-template-columns: 54px 1fr 22px; align-items: center; gap: 8px; font-size: 12px; }
+  .br div { height: 8px; border-radius: 4px; background: var(--mah); }
+  .note { font-size: 12.5px; color: var(--mute); margin-top: 8px; line-height: 1.45; }
+  .box { border-radius: 22px; padding: 14px; }
+  .row { display: flex; gap: 8px; flex-direction: column; }
+  .btn { border: 1px solid var(--mah); background: none; color: var(--mah); font: inherit; font-size: 15px; padding: 14px; border-radius: 30px; width: 100%; }
+  .btn.pri { background: #fff; border-color: #fff; color: var(--mah); }
+  select { font: inherit; font-size: 13px; color: var(--mah); background: rgba(255,255,255,.6); border: 1px solid var(--camel); border-radius: 16px; padding: 6px 10px; }
+  .warn { background: rgba(147,125,20,.18); border-radius: 16px; padding: 10px 14px; font-size: 13px; margin-bottom: 12px; display: none; }
+  .warn.on { display: block; }
+  .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom) + 84px); background: var(--mah); color: var(--smoke); padding: 10px 16px; border-radius: 22px; font-size: 13px; display: none; align-items: center; gap: 14px; z-index: 5; width: max-content; max-width: 92vw; }
+  .toast.on { display: flex; }
+  .toast button { border: 0; background: none; color: var(--camel); font: inherit; font-weight: 500; font-size: 13px; padding: 0; }
+</style>
+</head>
+<body>
+<div id="app">
+  <section class="view on" id="v-cal">
+    <div class="top">
+      <div class="next">
+        <div><div class="lbl"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12.2" r="4"/><path d="M12 3.5 L12.1 5.5 M12 18.5 L12 20.5 M3.5 12 L5.5 12.1 M18.5 12 L20.5 11.9 M6 6 L7.4 7.4 M16.6 16.6 L18 18 M18 6 L16.6 7.4 M7.4 16.6 L6 18"/></svg>Nächster Eisprung</div><div class="dt" id="h-ov">–</div><div class="in hand" id="h-ov-in"></div></div>
+        <div><div class="lbl"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3.5 C9 8 6.5 11 6.6 14.6 C6.7 18 9.2 20.3 12 20.3 C14.9 20.3 17.4 18 17.4 14.6 C17.4 11 15 8 12 3.5 Z"/></svg>Nächste Blutung</div><div class="dt" id="h-bl">–</div><div class="in hand" id="h-bl-in"></div></div>
+      </div>
+      <div class="phase"><span id="h-phase"></span><button class="info" data-note="phase" aria-label="Info">i</button></div>
+      <div class="legend">
+        <span><i style="background:var(--smoke)"></i>Blutung</span>
+        <span><i style="background:var(--pis)"></i>Eisprung</span>
+        <span><i style="background:rgba(147,125,20,.5)"></i>fruchtbar</span>
+        <span><i style="border:1.5px dashed var(--smoke)"></i>Prognose</span>
+      </div>
+    </div>
+    <div id="months"><div id="sentinel" style="height:1px"></div></div>
+  </section>
+
+  <section class="view" id="v-stats">
+    <div class="scroll">
+      <h1>Übersicht<button class="info" data-note="calc" aria-label="Info">i</button></h1>
+      <div class="hint hand"><span>tipp auf eine kachel</span><svg viewBox="0 0 60 34"><path d="M56 6 C40 3 20 8 8 24"/><path d="M5 14 L7 27 L20 25"/></svg></div>
+      <div class="hl"><div><div class="lbl">Nächste Blutung</div><div class="dt" id="s-bl">–</div></div><div class="in hand" id="s-bl-in"></div></div>
+      <div class="hl"><div><div class="lbl">Nächster Eisprung</div><div class="dt" id="s-ov">–</div></div><div class="in hand" id="s-ov-in"></div></div>
+      <div class="grid" id="kpis"></div>
+      <h2>Letzte Zyklen</h2>
+      <div class="bars" id="bars"></div>
+    </div>
+  </section>
+
+  <section class="view" id="v-food">
+    <div class="scroll">
+      <h1>Ernährung<button class="info" data-note="food" aria-label="Info">i</button></h1>
+      <div class="chips" id="chips"></div>
+      <div class="food glass" id="food"></div>
+    </div>
+  </section>
+
+  <section class="view" id="v-save">
+    <div class="scroll">
+      <h1>Sicherung<button class="info" data-note="backup" aria-label="Info">i</button></h1>
+      <div class="warn" id="warn">Die letzte Sicherung ist länger her.</div>
+      <div class="box glass">
+        <div class="row">
+          <button class="btn pri" id="b-exp">Exportieren</button>
+          <button class="btn" id="b-imp">Importieren</button>
+          <input type="file" id="f-imp" accept=".json,application/json" hidden>
+        </div>
+        <div class="note" id="s-exp"></div>
+        <div style="margin-top:12px;font-size:13.5px">Erinnerung nach
+          <select id="rem"><option value="7">7 Tagen</option><option value="14">14 Tagen</option><option value="30">30 Tagen</option><option value="0">nie</option></select>
+        </div>
+      </div>
+      <div class="hint hand" style="margin-top:14px"><span>ab und zu sichern</span><svg viewBox="0 0 60 34"><path d="M6 30 C20 32 44 28 52 6"/><path d="M42 10 L52 4 L56 15"/></svg></div>
+    </div>
+  </section>
+
+  <nav class="tabs glass">
+    <button id="t-cal" class="on"><svg class="ic" viewBox="0 0 24 24"><path d="M4 6.5 C4 5.5 5 5 6 5 L18 5.2 C19 5.3 20 6 20 7 L19.8 18 C19.8 19 19 20 18 20 L6 19.8 C5 19.8 4.2 19 4.2 18 Z"/><path d="M4.3 10 L19.8 9.8"/><path d="M8 3 L8.2 6.5"/><path d="M16 3.2 L15.8 6.5"/></svg>Kalender</button>
+    <button id="t-stats"><svg class="ic" viewBox="0 0 24 24"><path d="M3.5 18 C6 12 8 15 10.5 10 C12.5 6 14 13 16 11 C17.5 9.5 19 7 21 5.5"/><path d="M3.5 20.5 L20.5 20.3"/></svg>Übersicht</button>
+    <button id="t-food"><svg class="ic" viewBox="0 0 24 24"><path d="M12 21 C12.2 16 12 13 12 10"/><path d="M12 12 C8 12.5 5.5 10 5 6.5 C9 6.5 11.5 8 12 12"/><path d="M12 10 C12.5 6.5 15 4.5 19 4.5 C19 8.5 16 10.5 12 10"/></svg>Ernährung</button>
+    <button id="t-save"><svg class="ic" viewBox="0 0 24 24"><path d="M12 16 L12.2 5"/><path d="M7.5 9.5 L12 4.8 L16.5 9.5"/><path d="M4.5 14.5 C4.5 17.5 4.8 19.5 6 19.8 L18 19.6 C19.2 19.4 19.5 17.5 19.5 14.5"/></svg>Sicherung<span class="dot" id="dot"></span></button>
+  </nav>
+</div>
+<div class="ov" id="ov"><div class="paper"><h3 class="hand" id="ov-h"></h3><p id="ov-p"></p><button id="ov-x">Schließen</button><div style="clear:both"></div></div></div>
+<div class="toast" id="toast"><span id="toast-t"></span><button id="toast-b">Rückgängig</button></div>
+
+<script>
+'use strict';
+const DAY = 864e5, KEY = 'zyklus.v1', LUTEAL = 14, DEF_CYCLE = 28, DEF_BLEED = 5;
+const START = { y: 2026, m: 7 };                       // August 2026
+const dnOf = (y, m, d) => Math.round(Date.UTC(y, m, d) / DAY);
+const iso = dn => new Date(dn * DAY).toISOString().slice(0, 10);
+const parse = s => Math.round(Date.parse(s + 'T00:00:00Z') / DAY);
+const now = new Date();
+const TODAY = dnOf(now.getFullYear(), now.getMonth(), now.getDate());
+const fmt = (dn, o) => new Date(dn * DAY).toLocaleDateString('de-DE', Object.assign({ timeZone: 'UTC' }, o));
+const $ = id => document.getElementById(id);
+
+/* ---------- Speicher ---------- */
+const SEED = ['2026-09-06', '2026-09-07', '2026-09-08', '2026-09-09', '2026-10-11', '2026-10-12', '2026-10-13', '2026-10-14'], SEED_V = 3;
+const OLD_SEED = ['2026-08-30', '2026-08-31', '2026-09-01', '2026-09-02'];
+let state = load();
+function load() {
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY));
+    if (s && Array.isArray(s.bleeding)) {
+      const st = { bleeding: new Set(s.bleeding), lastExport: s.lastExport || 0, remind: s.remind == null ? 7 : s.remind, seedV: s.seedV || 1 };
+      if (st.seedV < SEED_V) {
+        if (st.seedV < 3) OLD_SEED.forEach(d => st.bleeding.delete(d));
+        SEED.forEach(d => st.bleeding.add(d)); st.seedV = SEED_V;
+      }
+      return st;
+    }
+  } catch (e) {}
+  return { bleeding: new Set(SEED), lastExport: 0, remind: 7, seedV: SEED_V };
+}
+function save() {
+  localStorage.setItem(KEY, JSON.stringify({ bleeding: [...state.bleeding].sort(), lastExport: state.lastExport, remind: state.remind, seedV: state.seedV }));
+}
+
+/* ---------- Modell ---------- */
+function periods() {
+  const a = [...state.bleeding].map(parse).sort((x, y) => x - y), ps = [];
+  for (const d of a) {
+    const p = ps[ps.length - 1];
+    if (p && d - p.end <= 2) p.end = d; else ps.push({ start: d, end: d });
+  }
+  ps.forEach(p => p.len = p.end - p.start + 1);
+  return ps;
+}
+const mean = a => a.reduce((s, x) => s + x, 0) / a.length;
+function stats(ps) {
+  const lens = [];
+  for (let i = 0; i + 1 < ps.length; i++) { const l = ps[i + 1].start - ps[i].start; if (l >= 15 && l <= 60) lens.push(l); }
+  const done = ps.filter((p, i) => !(i === ps.length - 1 && p.end >= TODAY - 1));
+  const recent = lens.slice(-6), rb = done.slice(-6);
+  return { lens, avg: recent.length ? mean(recent) : DEF_CYCLE, bleed: rb.length ? mean(rb.map(p => p.len)) : DEF_BLEED, known: recent.length > 0 };
+}
+function build(maxDn) {
+  const ps = periods(), S = stats(ps), map = new Map(), starts = [];
+  ps.forEach(p => starts.push({ dn: p.start, pred: false, len: p.len }));
+  if (ps.length) {
+    let s = ps[ps.length - 1].start; const L = Math.max(15, Math.round(S.avg));
+    for (let k = 0; k < 500; k++) {
+      s += L; if (s - LUTEAL > maxDn) break;
+      starts.push({ dn: s, pred: true, len: Math.max(1, Math.round(S.bleed)) });
+    }
+  }
+  const ovs = [];
+  for (let i = 1; i < starts.length; i++) {
+    const ov = starts[i].dn - LUTEAL, pred = starts[i].pred;
+    for (let d = ov - 5; d <= ov + 1; d++) map.set(d, { t: 'f', pred });
+    map.set(ov, { t: 'o', pred }); ovs.push({ dn: ov, pred });
+  }
+  starts.forEach(s => { if (s.pred) for (let d = s.dn; d < s.dn + s.len; d++) map.set(d, { t: 'b', pred: true }); });
+  state.bleeding.forEach(s => map.set(parse(s), { t: 'b', pred: false }));
+  return { map, starts, ovs, S, ps };
+}
+function phaseOf(dn, M) {
+  let i = -1; M.starts.forEach((s, k) => { if (s.dn <= dn) i = k; });
+  if (i < 0 || !M.starts[i + 1]) return null;
+  const e = M.map.get(dn), ov = M.starts[i + 1].dn - LUTEAL;
+  let name;
+  if (e && e.t === 'b') name = 'Blutung';
+  else if (e && e.t === 'o') name = 'Eisprung';
+  else if (e && e.t === 'f') name = 'fruchtbares Fenster';
+  else name = dn < ov - 5 ? 'Follikelphase' : 'Lutealphase';
+  return { day: dn - M.starts[i].dn + 1, name, pred: M.starts[i].pred };
+}
+const inDays = dn => { const d = dn - TODAY; return d === 0 ? 'heute' : d === 1 ? 'morgen' : 'in ' + d + ' Tagen'; };
+
+/* ---------- Kalender ---------- */
+let endIdx = (now.getFullYear() - START.y) * 12 + now.getMonth() - START.m + 12;
+const monthId = (y, m) => 'm-' + y + '-' + m;
+function monthHTML(y, m, map) {
+  const off = (new Date(Date.UTC(y, m, 1)).getUTCDay() + 6) % 7, n = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+  let h = '<div class="mo"><div class="mh" id="' + monthId(y, m) + '">' + fmt(dnOf(y, m, 1), { month: 'long', year: 'numeric' }) + '</div><div class="wk"><span>Mo</span><span>Di</span><span>Mi</span><span>Do</span><span>Fr</span><span>Sa</span><span>So</span></div><div class="g">';
+  for (let i = 0; i < off; i++) h += '<span></span>';
+  for (let d = 1; d <= n; d++) {
+    const dn = dnOf(y, m, d), e = map.get(dn);
+    let cls = 'd' + (e ? ' t-' + e.t + (e.pred ? ' p' : '') : '') + (dn === TODAY ? ' today' : '');
+    const ring = dn === TODAY ? '<svg viewBox="0 0 34 34"><path d="M17 2 C27 1 33 9 32 19 C31 28 23 33 14 32 C6 31 1 24 2 15 C3 7 10 3 20 3" fill="none" stroke="#937D14" stroke-width="1.6" stroke-linecap="round"/></svg>' : '';
+    h += '<button class="' + cls + '" data-dn="' + dn + '"><span class="c">' + d + ring + '</span></button>';
+  }
+  return h + '</div></div>';
+}
+function render(keepScroll) {
+  const box = $('months'), top = box.scrollTop;
+  const last = START.m + endIdx, ly = START.y + Math.floor(last / 12), lm = last % 12;
+  const M = build(dnOf(ly, lm + 1, 1) + 60);
+  let h = '';
+  for (let i = 0; i <= endIdx; i++) { const t = START.m + i; h += monthHTML(START.y + Math.floor(t / 12), t % 12, M.map); }
+  box.innerHTML = h + '<div id="sentinel" style="height:1px"></div>';
+  if (keepScroll) box.scrollTop = top;
+  observe();
+  header(M);
+  return M;
+}
+function header(M) {
+  const nb = M.starts.find(s => s.dn >= TODAY), no = M.ovs.find(o => o.dn >= TODAY);
+  const f = dn => fmt(dn, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  const short = dn => fmt(dn, { weekday: 'short', day: 'numeric', month: 'short' });
+  $('h-ov').textContent = no ? short(no.dn) : '–'; $('h-ov-in').textContent = no ? inDays(no.dn) : '';
+  $('h-bl').textContent = nb ? short(nb.dn) : '–'; $('h-bl-in').textContent = nb ? inDays(nb.dn) : '';
+  $('s-ov').textContent = no ? f(no.dn) : '–'; $('s-ov-in').textContent = no ? inDays(no.dn) : '';
+  $('s-bl').textContent = nb ? f(nb.dn) : '–'; $('s-bl-in').textContent = nb ? inDays(nb.dn) : '';
+  const ph = phaseOf(TODAY, M);
+  $('h-phase').textContent = ph ? 'Heute: Zyklustag ' + ph.day + ' · ' + ph.name + (ph.pred ? ' (Prognose)' : '') : 'Trage Blutungstage ein, um Prognosen zu sehen.';
+  stats_view(M);
+}
+let io;
+function observe() {
+  if (io) io.disconnect();
+  io = new IntersectionObserver(es => { if (es[0].isIntersecting) { endIdx += 6; render(true); } }, { root: $('months'), rootMargin: '400px' });
+  io.observe($('sentinel'));
+}
+function toCurrent() {
+  const el = $(monthId(now.getFullYear(), now.getMonth()));
+  if (el) $('months').scrollTop = el.parentElement.offsetTop - 8;
+}
+$('months').addEventListener('click', e => {
+  const b = e.target.closest('.d[data-dn]'); if (!b) return;
+  const dn = +b.dataset.dn, k = iso(dn), had = state.bleeding.has(k);
+  had ? state.bleeding.delete(k) : state.bleeding.add(k);
+  save(); render(true);
+  toast(fmt(dn, { day: 'numeric', month: 'short' }) + (had ? ': Blutung entfernt' : ': Blutung eingetragen'), () => {
+    had ? state.bleeding.add(k) : state.bleeding.delete(k); save(); render(true);
+  });
+});
+let tt;
+function toast(t, undo) {
+  $('toast-t').textContent = t; $('toast').classList.add('on');
+  $('toast-b').onclick = () => { $('toast').classList.remove('on'); undo(); };
+  clearTimeout(tt); tt = setTimeout(() => $('toast').classList.remove('on'), 4000);
+}
+
+/* ---------- Übersicht ---------- */
+function stats_view(M) {
+  const S = M.S, ps = M.ps, L = S.lens;
+  const k = (v, l, n) => '<div class="k" data-note="' + n + '"><b>' + v + '</b><span>' + l + '</span></div>';
+  const sd = L.length > 1 ? Math.sqrt(mean(L.map(x => (x - mean(L)) ** 2))) : null;
+  const reg = sd == null ? '–' : '± ' + (Math.round(sd * 10) / 10).toString().replace('.', ',') + ' Tage';
+  const r1 = x => (Math.round(x * 10) / 10).toString().replace('.', ',');
+  $('kpis').innerHTML =
+    k(S.known ? r1(S.avg) : '–', 'Ø Zyklus (Tage)', 'k-cycle') +
+    k(ps.length ? r1(S.bleed) : '–', 'Ø Blutung (Tage)', 'k-bleed') +
+    k(L.length ? Math.min(...L) + ' – ' + Math.max(...L) : '–', 'kürzester – längster', 'k-range') +
+    k(S.known ? 'Tag ' + Math.round(S.avg - LUTEAL) : '–', 'Eisprung (Ø)', 'k-ov') +
+    k(reg, 'Regelmäßigkeit', 'k-reg') +
+    k(String(L.length), 'Zyklen erfasst', 'k-n');
+  const last = L.slice(-6), max = Math.max(35, ...last), cyc = [];
+  for (let i = 0; i + 1 < ps.length; i++) cyc.push({ s: ps[i].start, l: ps[i + 1].start - ps[i].start });
+  $('bars').innerHTML = cyc.length ? cyc.slice(-6).reverse().map(c =>
+    '<div class="br"><span>' + fmt(c.s, { day: 'numeric', month: 'short' }) + '</span><div style="width:' + (c.l / max * 100) + '%"></div><span>' + c.l + '</span></div>').join('')
+    : '<div class="note">Noch keine abgeschlossenen Zyklen.</div>';
+  const due = state.remind > 0 && state.bleeding.size > 0 && (!state.lastExport || (Date.now() - state.lastExport) > state.remind * DAY);
+  $('warn').classList.toggle('on', due); $('dot').classList.toggle('on', due);
+  $('s-exp').textContent = state.lastExport ? 'Letzter Export: ' + new Date(state.lastExport).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Noch nie exportiert.';
+  $('rem').value = String(state.remind);
+}
+$('rem').onchange = e => { state.remind = +e.target.value; save(); stats_view(build(TODAY + 60)); };
+
+/* ---------- Export / Import ---------- */
+$('b-exp').onclick = async () => {
+  const data = JSON.stringify({ app: 'zyklus', version: 1, exportedAt: new Date().toISOString(), bleeding: [...state.bleeding].sort() }, null, 1);
+  const name = 'zyklus-backup-' + iso(TODAY) + '.json', file = new File([data], name, { type: 'application/json' });
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [file] })) await navigator.share({ files: [file], title: 'Zyklus-Sicherung' });
+    else { const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
+  } catch (e) { if (e.name === 'AbortError') return; alert('Export fehlgeschlagen: ' + e.message); return; }
+  state.lastExport = Date.now(); save(); stats_view(build(TODAY + 60));
+};
+$('b-imp').onclick = () => $('f-imp').click();
+$('f-imp').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try {
+    const j = JSON.parse(await f.text());
+    if (!j || !Array.isArray(j.bleeding) || !j.bleeding.every(s => /^\d{4}-\d{2}-\d{2}$/.test(s))) throw new Error('Datei hat ein unbekanntes Format.');
+    const replace = confirm(j.bleeding.length + ' Blutungstage gefunden.\n\nOK = bestehende Daten ersetzen\nAbbrechen = weitere Auswahl');
+    if (replace) state.bleeding = new Set(j.bleeding);
+    else if (confirm('Stattdessen mit den vorhandenen Daten zusammenführen?')) j.bleeding.forEach(s => state.bleeding.add(s));
+    else return;
+    save(); render(true); alert('Import abgeschlossen.');
+  } catch (err) { alert('Import fehlgeschlagen: ' + err.message); }
+};
+
+/* ---------- Notizen (Pop-ups) ---------- */
+const NOTES = {
+  phase: ['Zyklusphase', 'Zyklustag 1 ist der erste Blutungstag. Danach folgen Follikelphase, fruchtbares Fenster mit Eisprung und Lutealphase. Mit "(Prognose)" ist die Phase berechnet, nicht bestätigt.'],
+  calc: ['So wird gerechnet', 'Die Prognose nutzt den Durchschnitt deiner letzten 6 bestätigten Zyklen, ohne Daten 28 Tage. Der Eisprung liegt 14 Tage vor der nächsten Blutung, das fruchtbare Fenster reicht von 5 Tage davor bis 1 Tag danach. Tippe auf eine Kachel für Details.'],
+  backup: ['Sicherung', 'Deine Daten liegen nur auf diesem Gerät. Über Exportieren und das Teilen-Menü legst du die Datei in Dateien, iCloud Drive oder OneDrive ab. Einen festen Ordner kann eine Web-App auf dem iPhone nicht selbst beschreiben.'],
+  food: ['Hinweis', 'Allgemeine Ernährungstipps, die sich an den Zyklusphasen orientieren. Sie ersetzen keine ärztliche Beratung. Bei starken Beschwerden, Eisenmangel oder Kinderwunsch sprich mit deiner Ärztin oder deinem Arzt.'],
+  'k-cycle': ['Ø Zyklus', 'Abstand zwischen dem ersten Blutungstag eines Zyklus und dem nächsten, gemittelt über die letzten 6 Zyklen.'],
+  'k-bleed': ['Ø Blutung', 'Durchschnittliche Anzahl der Blutungstage. Eine laufende Blutung zählt noch nicht mit.'],
+  'k-range': ['Kürzester und längster', 'Der kürzeste und der längste bisher erfasste Zyklus in Tagen.'],
+  'k-ov': ['Eisprung', 'Zyklustag des Eisprungs: Zykluslänge minus 14 Tage. Das ist eine Berechnung, keine Messung.'],
+  'k-reg': ['Regelmäßigkeit', 'Standardabweichung der Zykluslängen. Je kleiner, desto regelmäßiger. Ab 2 Zyklen sichtbar.'],
+  'k-n': ['Erfasste Zyklen', 'Anzahl der vollständigen Zyklen, also Blutung bis zur nächsten Blutung.']
+};
+function note(k) { const n = NOTES[k]; if (!n) return; $('ov-h').textContent = n[0]; $('ov-p').textContent = n[1]; $('ov').classList.add('on'); }
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-note]'); if (t) { note(t.dataset.note); return; }
+  if (e.target.id === 'ov' || e.target.id === 'ov-x') $('ov').classList.remove('on');
+});
+
+/* ---------- Ernährung ---------- */
+const FOOD = {
+  mens: { n: 'Menstruation', fokus: 'Eisen auffüllen, wärmen, entlasten', eat: ['Linsen', 'Kichererbsen', 'Spinat', 'Rote Bete', 'Haferflocken', 'Kürbiskerne', 'Rindfleisch', 'Lachs', 'Ingwertee', 'Brühe', 'Dunkle Schokolade', 'Paprika', 'Orange'],
+    tips: ['Eisenreiches mit Vitamin C kombinieren (Linsen mit Paprika), das verbessert die Aufnahme.', 'Kaffee und schwarzen Tee nicht direkt zum Essen trinken, sie hemmen die Eisenaufnahme.', 'Warme Suppen und Eintöpfe tun gut, Magnesium (Nüsse, Banane) kann Krämpfe mildern.'], less: ['viel Salz', 'Alkohol', 'stark Verarbeitetes'] },
+  fol: { n: 'Follikelphase', fokus: 'Energie steigt, leicht und eiweißreich essen', eat: ['Eier', 'Joghurt', 'Sauerkraut', 'Brokkoli', 'Beeren', 'Vollkornbrot', 'Hülsenfrüchte', 'Fisch', 'Sprossen', 'Hafer', 'Tofu', 'Nüsse'],
+    tips: ['Du verträgst Kohlenhydrate jetzt oft gut, Vollkorn liefert gleichmäßige Energie.', 'Eiweiß zu jeder Mahlzeit unterstützt Training und Sättigung.', 'Fermentiertes wie Joghurt oder Sauerkraut fördert die Darmflora.'], less: ['zu viel Zucker', 'Weißmehl'] },
+  ov: { n: 'Eisprung', fokus: 'Antioxidantien, Ballaststoffe, Zink', eat: ['Beeren', 'Tomaten', 'Blattsalate', 'Avocado', 'Quinoa', 'Lachs', 'Eier', 'Kürbiskerne', 'Zucchini', 'Mandeln', 'Zitrusfrüchte', 'Knoblauch'],
+    tips: ['Buntes Gemüse liefert Antioxidantien und Folat.', 'Viel trinken, am besten Wasser oder Kräutertee.', 'Zinkhaltige Lebensmittel wie Kürbiskerne und Eier einbauen.'], less: ['viel Alkohol', 'Fertiggerichte'] },
+  lut: { n: 'Lutealphase', fokus: 'Magnesium, B-Vitamine, komplexe Kohlenhydrate', eat: ['Süßkartoffel', 'Haferflocken', 'Naturreis', 'Banane', 'Mandeln', 'Kürbiskerne', 'Joghurt', 'Hähnchen', 'Kichererbsen', 'Brokkoli', 'Dunkle Schokolade', 'Walnüsse'],
+    tips: ['Der Appetit steigt oft leicht. Regelmäßige Mahlzeiten mit komplexen Kohlenhydraten dämpfen Heißhunger.', 'Magnesium und Vitamin B6 (Banane, Nüsse, Geflügel) können PMS-Beschwerden lindern.', 'Bei Brustspannen oder Wassereinlagerung helfen weniger Salz, Koffein und Alkohol.'], less: ['viel Salz', 'Koffein', 'Alkohol', 'Zuckersnacks'] }
+};
+const PH2KEY = { 'Blutung': 'mens', 'Follikelphase': 'fol', 'Eisprung': 'ov', 'fruchtbares Fenster': 'ov', 'Lutealphase': 'lut' };
+const PH_ICON = {
+  mens: '<path d="M12 3.5 C9 8 6.5 11 6.6 14.6 C6.7 18 9.2 20.3 12 20.3 C14.9 20.3 17.4 18 17.4 14.6 C17.4 11 15 8 12 3.5 Z"/>',
+  fol: '<path d="M12 21 C12.2 16 12 13 12 10"/><path d="M12 12 C8 12.5 5.5 10 5 6.5 C9 6.5 11.5 8 12 12"/><path d="M12 10 C12.5 6.5 15 4.5 19 4.5 C19 8.5 16 10.5 12 10"/>',
+  ov: '<circle cx="12" cy="12.2" r="4"/><path d="M12 3.5 L12.1 5.5 M12 18.5 L12 20.5 M3.5 12 L5.5 12.1 M18.5 12 L20.5 11.9 M6 6 L7.4 7.4 M16.6 16.6 L18 18 M18 6 L16.6 7.4 M7.4 16.6 L6 18"/>',
+  lut: '<path d="M18.5 14.5 C13.5 16.5 8 12.5 9.5 5 C4.5 6.5 3 13 6 17.5 C9 21.5 15.5 21 18.5 14.5 Z"/>'
+};
+let foodSel = null, foodNow = null;
+function foodView() {
+  const M = build(TODAY + 60), ph = phaseOf(TODAY, M);
+  foodNow = ph ? PH2KEY[ph.name] : null;
+  if (!foodSel) foodSel = foodNow || 'fol';
+  $('chips').innerHTML = Object.keys(FOOD).map(k => '<button class="chip' + (k === foodSel ? ' on' : '') + (k === foodNow ? ' now' : '') + '" data-k="' + k + '">' + FOOD[k].n + '</button>').join('');
+  const f = FOOD[foodSel], tag = (a, c) => a.map(x => '<span class="tag ' + c + '">' + x + '</span>').join('');
+  $('food').innerHTML = '<div class="pi"><svg class="ic" viewBox="0 0 24 24">' + PH_ICON[foodSel] + '</svg></div><div class="lbl">Fokus</div><div class="fo hand">' + f.fokus + '</div>' +
+    '<h2>Beispiele</h2><div class="tags">' + tag(f.eat, '') + '</div>' +
+    '<h2>Tipps</h2><ul>' + f.tips.map(t => '<li>' + t + '</li>').join('') + '</ul>' +
+    '<h2>Eher reduzieren</h2><div class="tags">' + tag(f.less, 'no') + '</div>';
+}
+$('chips').addEventListener('click', e => { const b = e.target.closest('.chip'); if (b) { foodSel = b.dataset.k; foodView(); } });
+
+/* ---------- Tabs & Start ---------- */
+function tab(n) {
+  ['cal', 'stats', 'food', 'save'].forEach(x => { $('v-' + x).classList.toggle('on', x === n); $('t-' + x).classList.toggle('on', x === n); });
+  if (n === 'cal') toCurrent();
+  if (n === 'food') { foodSel = null; foodView(); }
+}
+$('t-cal').onclick = () => tab('cal'); $('t-stats').onclick = () => tab('stats'); $('t-food').onclick = () => tab('food'); $('t-save').onclick = () => tab('save');
+render(false); tab('cal');
+let hiddenAt = 0;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) hiddenAt = Date.now();
+  else if (hiddenAt && Date.now() - hiddenAt > 30000) { render(false); tab('cal'); }
+});
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>
